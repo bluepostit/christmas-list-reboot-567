@@ -24,34 +24,46 @@
 #     Ask the user for the index of the gift to mark as bought
 #     Get the index from the user and store it
 #     Mark the relevant gift as bought
+#   If action is 'ideas':
+#     Ask user for ideas keyword
+#     Get the keyword from the user and store it
+#     Get list of products by scraping website for keyword and store it
+#     Display first X results
+#     Ask user for the index of the idea to add
+#     Get idea index from user and store it
+#     Get the idea/product from the ideas list by this index and store it
+#     Add it to the gift list
 # End loop
 # Print goodbye message
 
 def list_gifts(gifts)
   puts '== Your gifts: =='
   gifts.each_with_index do |gift, index|
-    puts "#{index + 1}. #{gift}"
+    # bought = <condition> ? <truthy part> : <falsy part>
+    bought = gift[:bought] ? 'x' : ' '
+    puts "#{index + 1}. [#{bought}] #{gift[:name]}"
   end
 end
 
 puts "Welcome to your Christmas shopping list"
 
-actions = ['list', 'add', 'delete', 'quit']
+actions = ['list', 'add', 'delete', 'mark', 'quit']
 
 user_action = ''
-gifts = ['book', 'socks', 'headset']
-
-# gifts = {
-#   'book' => false,
-#   'socks' => true
-# }
-
-# gifts = [
-#   {
-#     name: 'book',
-#     bought: false
-#   },
-# ]
+gifts = [
+  {
+    name: 'book',
+    bought: false
+  },
+  {
+    name: 'socks',
+    bought: false,
+  },
+  {
+    name: 'headset',
+    bought: true
+  }
+]
 
 until user_action.match?(/quit/i)
   puts 'Please choose an action'
@@ -63,8 +75,8 @@ until user_action.match?(/quit/i)
     list_gifts(gifts)
     puts 'Please enter the gift name to add'
     print '> '
-    gift = gets.chomp
-    gifts << gift
+    name = gets.chomp
+    gifts << { name: name, bought: false }
   when 'list'
     list_gifts(gifts)
   when 'delete'
@@ -73,6 +85,12 @@ until user_action.match?(/quit/i)
     print '> '
     index = gets.chomp.to_i - 1
     gifts.delete_at(index)
+  when 'mark'
+    list_gifts(gifts)
+    puts "Please enter the number of the gift to mark as bought"
+    print '> '
+    index = gets.chomp.to_i - 1
+    gifts[index][:bought] = true
   end
   puts ""
 end
