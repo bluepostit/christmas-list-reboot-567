@@ -36,6 +36,15 @@
 # End loop
 # Print goodbye message
 
+require 'open-uri'
+require 'nokogiri'
+
+def user_index
+  puts "Please enter the number of the gift"
+  print '> '
+  index = gets.chomp.to_i - 1
+end
+
 def list_gifts(gifts)
   puts '== Your gifts: =='
   gifts.each_with_index do |gift, index|
@@ -45,9 +54,26 @@ def list_gifts(gifts)
   end
 end
 
+def scrape_ideas(keyword)
+  # filepath = "results.html"
+  # 1. We get the HTML page content
+  # html_content = File.open(filepath)
+  html_content = open("https://www.etsy.com/search?q=#{keyword}").read
+  # 2. We build a Nokogiri document from this file
+  doc = Nokogiri::HTML(html_content)
+
+  ideas = []
+  # 3. We search for the correct elements containing the items' title in our HTML doc
+  doc.search('.v2-listing-card .v2-listing-card__info .text-body').each do |element|
+    # 4. For each item found, we extract its title and print it
+    ideas << element.text.strip
+  end
+  return ideas.take(5)
+end
+
 puts "Welcome to your Christmas shopping list"
 
-actions = ['list', 'add', 'delete', 'mark', 'quit']
+actions = %w[list add delete mark ideas quit]
 
 user_action = ''
 gifts = [
@@ -81,16 +107,22 @@ until user_action.match?(/quit/i)
     list_gifts(gifts)
   when 'delete'
     list_gifts(gifts)
-    puts "Please enter the number of the gift to delete"
-    print '> '
-    index = gets.chomp.to_i - 1
+    index = user_index()
     gifts.delete_at(index)
   when 'mark'
     list_gifts(gifts)
-    puts "Please enter the number of the gift to mark as bought"
-    print '> '
-    index = gets.chomp.to_i - 1
+    index = user_index
     gifts[index][:bought] = true
+  when 'ideas'
+    puts "Please enter the keyword to search for ideas with"
+    keyword = gets.chomp
+    ideas = scrape_ideas(keyword)
+    ideas.each_with_index do |idea, index|
+      puts "#{index + 1}. #{idea}"
+    end
+    index = user_index
+    idea = ideas[index]
+    gifts << { name: idea, bought: false }
   end
   puts ""
 end
